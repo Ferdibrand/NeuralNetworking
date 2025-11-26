@@ -15,8 +15,9 @@ public class Main {
                         new ArrayList<Double>(Arrays.asList(6.0, 7.0))
                 )));
 
-        Matrix c = Matrix.transpose(a);
-        Matrix d = Matrix.subtract(a, b);
+        Matrix c = a.transpose();
+        Matrix d = a.subtract(b);
+        d = d.mMultiply(a);
         System.out.println(a);
         System.out.println(b);
         System.out.println(c);

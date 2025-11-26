@@ -104,54 +104,104 @@ public class Matrix {
     }
 
     // Operations
-    public static Matrix add(Matrix a, Matrix b) {
-        if (a.numRow == b.numRow && a.numColumn == b.numColumn) {
-            Matrix sum = new Matrix(a.numRow, a.numColumn);
+//    public static Matrix add(Matrix a, Matrix b) {
+//        if (a.numRow == b.numRow && a.numColumn == b.numColumn) {
+//            Matrix sum = new Matrix(a.numRow, a.numColumn);
+//            for (int row = 0; row < sum.numRow; row++) {
+//                for (int col = 0; col < sum.numColumn; col++) {
+//                    sum.setValue(row, col, a.getValue(row, col) + b.getValue(row, col));
+//                }
+//            }
+//            return sum;
+//        } else {
+//            System.out.println("Cannot add matrices, not same order. Return Matrix a");
+//            return a;
+//        }
+//    }
+
+    public Matrix add( Matrix b) {
+        if (numRow == b.numRow && numColumn == b.numColumn) {
+            Matrix sum = new Matrix(numRow, numColumn);
             for (int row = 0; row < sum.numRow; row++) {
                 for (int col = 0; col < sum.numColumn; col++) {
-                    sum.setValue(row, col, a.getValue(row, col) + b.getValue(row, col));
+                    sum.setValue(row, col, getValue(row, col) + b.getValue(row, col));
                 }
             }
             return sum;
         } else {
             System.out.println("Cannot add matrices, not same order. Return Matrix a");
-            return a;
+            return this;
         }
     }
 
-    public static Matrix subtract(Matrix a, Matrix b) {
-        if (a.numRow == b.numRow && a.numColumn == b.numColumn) {
-            Matrix difference = new Matrix(a.numRow, a.numColumn);
-            for (int row = 0; row < difference.numRow; row++) {
-                for (int col = 0; col < difference.numColumn; col++) {
-                    difference.setValue(row, col, a.getValue(row, col) + b.getValue(row, col));
-                }
-            }
-            return difference;
-        } else {
-            System.out.println("Cannot subtract matrices, not same order. Return Matrix a");
-            return a;
-        }
+//    public static Matrix subtract(Matrix a, Matrix b) {
+//        if (a.numRow == b.numRow && a.numColumn == b.numColumn) {
+//            Matrix difference = new Matrix(a.numRow, a.numColumn);
+//            for (int row = 0; row < difference.numRow; row++) {
+//                for (int col = 0; col < difference.numColumn; col++) {
+//                    difference.setValue(row, col, a.getValue(row, col) + b.getValue(row, col));
+//                }
+//            }
+//            return difference;
+//        } else {
+//            System.out.println("Cannot subtract matrices, not same order. Return Matrix a");
+//            return a;
+//        }
+//    }
+
+    public Matrix subtract (Matrix b) {
+        b = b.sMultiply(-1);
+        Matrix difference = this.add(b);
+        return difference;
     }
 
-    public static Matrix sMultiply(Matrix a, double scalar) {
-        Matrix product = new Matrix(a.numRow, a.numColumn);
+//    public static Matrix sMultiply(Matrix a, double scalar) {
+//        Matrix product = new Matrix(a.numRow, a.numColumn);
+//        for (int row = 0; row < product.numRow; row++) {
+//            for (int col = 0; col < product.numColumn; col++) {
+//                product.setValue(row, col, a.getValue(row, col) * scalar);
+//            }
+//        }
+//        return product;
+//    }
+
+    public  Matrix sMultiply(double scalar) {
+        Matrix product = new Matrix(numRow, numColumn);
         for (int row = 0; row < product.numRow; row++) {
             for (int col = 0; col < product.numColumn; col++) {
-                product.setValue(row, col, a.getValue(row, col) * scalar);
+                product.setValue(row, col, getValue(row, col) * scalar);
             }
         }
         return product;
     }
 
-    public static Matrix mMultiply(Matrix a, Matrix b) {
-        if (a.numColumn == b.numRow) {
-            Matrix product = new Matrix(a.numRow, b.numColumn);
+//    public static Matrix mMultiply(Matrix a, Matrix b) {
+//        if (a.numColumn == b.numRow) {
+//            Matrix product = new Matrix(a.numRow, b.numColumn);
+//            for (int row = 0; row < product.numRow; row++) {
+//                for (int col = 0; col < product.numColumn; col++) {
+//                    double value = 0;
+//                    for (int i = 0; i < a.numColumn; i++) {
+//                        value += a.getValue(row, i) * b.getValue(i, col);
+//                    }
+//                    product.setValue(row, col, value);
+//                }
+//            }
+//            return product;
+//        } else {
+//            System.out.println("Cannot multiply matrices, not compatible orders. Return Matrix a");
+//            return a;
+//        }
+//    }
+
+    public  Matrix mMultiply(Matrix b) {
+        if (numColumn == b.numRow) {
+            Matrix product = new Matrix(numRow, b.numColumn);
             for (int row = 0; row < product.numRow; row++) {
                 for (int col = 0; col < product.numColumn; col++) {
                     double value = 0;
-                    for (int i = 0; i < a.numColumn; i++) {
-                        value += a.getValue(row, i) * b.getValue(i, col);
+                    for (int i = 0; i < numColumn; i++) {
+                        value += getValue(row, i) * b.getValue(i, col);
                     }
                     product.setValue(row, col, value);
                 }
@@ -159,15 +209,25 @@ public class Matrix {
             return product;
         } else {
             System.out.println("Cannot multiply matrices, not compatible orders. Return Matrix a");
-            return a;
+            return this;
         }
     }
 
-    public static Matrix transpose(Matrix a) {
-        Matrix transposed = new Matrix(a.numColumn, a.numRow);
-        for (int row = 0; row < a.numRow; row++) {
-            for (int col = 0; col < a.numColumn; col++) {
-                transposed.setValue(col, row, a.getValue(row, col));
+//    public static Matrix transpose(Matrix a) {
+//        Matrix transposed = new Matrix(a.numColumn, a.numRow);
+//        for (int row = 0; row < a.numRow; row++) {
+//            for (int col = 0; col < a.numColumn; col++) {
+//                transposed.setValue(col, row, a.getValue(row, col));
+//            }
+//        }
+//        return transposed;
+//    }
+
+    public Matrix transpose() {
+        Matrix transposed = new Matrix(numColumn, numRow);
+        for (int row = 0; row < numRow; row++) {
+            for (int col = 0; col < numColumn; col++) {
+                transposed.setValue(col, row, getValue(row, col));
             }
         }
         return transposed;

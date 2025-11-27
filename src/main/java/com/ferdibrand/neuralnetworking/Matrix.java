@@ -85,7 +85,7 @@ public class Matrix {
             contentsNewLine += Arrays.toString(l);
             contentsNewLine += "\n";
         }
-        return "Order: (" + numRow + ", " + numCol + ")\nContents:\n" + contentsNewLine;
+        return contentsNewLine;
     }
 
     // Operations

@@ -1,3 +1,5 @@
+package com.ferdibrand.neuralnetworking;
+
 import java.util.Arrays;
 
 public class Matrix {

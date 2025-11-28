@@ -105,9 +105,7 @@ public class Matrix {
     }
 
     public Matrix subtract (Matrix b) {
-        b = b.multiply(-1);
-        Matrix difference = this.add(b);
-        return difference;
+        return this.add(b.multiply(-1));
     }
 
     public Matrix multiply(double scalar) {
@@ -139,6 +137,21 @@ public class Matrix {
         }
     }
 
+    public Matrix multiplyElement(Matrix b) {
+        if (numRow == b.numRow && numCol == b.numCol) {
+            Matrix product = new Matrix(numRow, numCol);
+            for (int row = 0; row < product.numRow; row++) {
+                for (int col = 0; col < product.numCol; col++) {
+                    product.contents[row][col] = this.getValue(row, col) * b.getValue(row, col);
+                }
+            }
+            return product;
+        } else {
+            System.out.println("Cannot multiply matrices, not same order. Return Matrix a");
+            return this;
+        }
+    }
+
     public Matrix transpose() {
         Matrix transposed = new Matrix(numCol, numRow);
         for (int row = 0; row < numRow; row++) {
@@ -147,5 +160,19 @@ public class Matrix {
             }
         }
         return transposed;
+    }
+
+    public static double sigmoid(double value) {
+        return 1.0 / (1 + Math.exp(-value));
+    }
+
+    public Matrix sigmoid() {
+        Matrix m = new Matrix(numRow, numCol);
+        for (int row = 0; row < numRow; row++) {
+            for (int col = 0; col < numCol; col++) {
+                m.setValue(row, col, Math.random());
+            }
+        }
+        return m;
     }
 }

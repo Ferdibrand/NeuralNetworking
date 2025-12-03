@@ -26,6 +26,7 @@ public class Matrix {
         this.contents = contents;
     }
 
+
     // Getters
     public int getNumRow() {
         return numRow;
@@ -173,6 +174,16 @@ public class Matrix {
         for (int row = 0; row < numRow; row++) {
             for (int col = 0; col < numCol; col++) {
                 m.setValue(row, col, Math.random());
+            }
+        }
+        return m;
+    }
+
+    public static Matrix setOne(int row, int col) {
+        Matrix m = new Matrix(row, col);
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                m.setValue(i, j, 1);
             }
         }
         return m;

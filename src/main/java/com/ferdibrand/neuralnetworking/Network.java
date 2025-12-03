@@ -1,5 +1,9 @@
 package com.ferdibrand.neuralnetworking;
 
+import java.util.Scanner;
+import java.util.Collections;
+import java.io.File;
+
 public class Network {
     private final int  NUM_INPUT_NEURONS;
     private final int NUM_OUTPUT_NEURONS;
@@ -23,6 +27,8 @@ public class Network {
     private int NUM_EPOCHS;
     private Matrix input;
     private Matrix outputTrue;
+    private int[][] trainInput;
+    private int[][] trainOutput;
 
 
     public Network(int numInputNeurons, int numOutputNeurons, int numHiddenLayers, int numHiddenNeurons,
@@ -102,6 +108,35 @@ public class Network {
         return str;
     }
 
+    public int[][] parse(String filename) {
+        try {
+            Scanner scan = new Scanner(new File(filename));
+            int numLines = 0;
+            String[] temp;
+            while (scan.hasNextLine()) {
+                numLines++;
+                temp = scan.nextLine().split(",");
+            }
+            scan.close();
+
+            Scanner read = new Scanner(new File(filename));
+            String[][] inputString = new String[numLines][temp.length];
+            for (int i = 0; i < numLines; i++) {
+                inputString[i] = read.nextLine().split(",")
+            }
+            read.close()
+
+            int[][] input = new int[numLines][temp.length];
+            for (int i = 0; i < numLines; i++) {
+                for (int j = 0; j < temp.length) {
+                    input[i][j] = Integer.parseInt(inputString[i][j]);
+                }
+            }
+
+            return input;
+        }
+    }
+
     //each column of input is a set of training data; order: NUM_INPUT_NEURONSxBATCH_SIZE
     public void feedForward(Matrix input) {
         layers[INPUT_LAYER_INDEX] = input;
@@ -114,34 +149,49 @@ public class Network {
     public Matrix expandBias(Matrix input, int numCol) {
         Matrix output = new Matrix(input.getNumRow(), numCol);
         for (int i = 0; i < numCol; i++) {
-            output.setCol(i, output.getCol(1));
+            output.setCol(i, input.getCol(0));
         }
         return output;
     }
 
     public void backPropagate() {
         costs[epoch] = cost(layers[OUTPUT_LAYER_INDEX], outputTrue);
+        dPreActivation[OUTPUT_LAYER_INDEX] = layers[OUTPUT_LAYER_INDEX].subtract(outputTrue);
+        for (int layer = OUTPUT_LAYER_INDEX - 1; layer >= 0; layer--) {
+            dActivation[layer] = calcDActivation(layer);
+            dWeights[layer] = calcDWeight(layer);
+            dBiases[layer] = calcDBias(layer);
+            dPreActivation[layer] = calcDPreActivation(layer);
+        }
+        adjustWeightsBiases();
+    }
 
+    public void adjustWeightsBiases() {
+        for (int i = 0; i < weights.length; i++) {
+            weights[i] = weights[i].subtract(dWeights[i].multiply(LEARNING_RATE));
+            biases[i] = biases[i].subtract(dBiases[i].multiply(LEARNING_RATE));
+        }
     }
 
     public Matrix calcDWeight(int layer) {
-        return dPreActivation[layer + 1].multiply(layers[layer].transpose());
+        return dPreActivation[layer + 1].multiply(layers[layer].transpose()).multiply(1.0 / BATCH_SIZE);
     }
 
     public Matrix calcDBias(int layer) {
-        Matrix output = new Matrix(layers[layer].getNumRow(), 1);
-        for (int i = 0; i < dPreActivation[layer].getNumRow(); i++) {
+        Matrix output = new Matrix(layers[layer + 1].getNumRow(), 1);
+        for (int i = 0; i < output.getNumRow(); i++) {
             double sum = 0;
-            for (int j = 0; j < dPreActivation[layer].getNumCol(); j++) {
-                sum += dPreActivation[layer].getValue(i, j);
+            for (int j = 0; j < dPreActivation[layer + 1].getNumCol(); j++) {
+                sum += dPreActivation[layer + 1].getValue(i, j);
             }
-            output.setValue(i, 1, sum);
+            output.setValue(i, 0, sum);
         }
-        return output;
+        return output.multiply(1.0 / BATCH_SIZE);
     }
 
     public Matrix calcDPreActivation(int layer) {
-        return dActivation[layer].multiplyElement(layers[layer].transpose());
+        return dActivation[layer].multiplyElement(layers[layer].multiplyElement(
+                Matrix.setOne(layers[layer].getNumRow(), layers[layer].getNumCol()).subtract(layers[layer])));
     }
 
     public Matrix calcDActivation(int layer) {
@@ -162,5 +212,12 @@ public class Network {
     //For binary output
     public double loss(double outputPredicted, double outputTrue) {
         return -(outputTrue * Math.log(outputPredicted) + (1 - outputTrue) * Math.log(1 - outputPredicted));
+    }
+
+    public void train() {
+        for (int i = 0; i < NUM_EPOCHS; i++) {
+            epoch++;
+            //feedForward();
+        }
     }
 }

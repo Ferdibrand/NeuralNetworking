@@ -102,7 +102,7 @@ public class Matrix {
             }
             return sum;
         } else {
-            System.out.println("Cannot add matrices, not same order. Return Matrix a");
+            System.out.println(0/0);
             return this;
         }
     }
@@ -173,11 +173,12 @@ public class Matrix {
         Matrix m = new Matrix(numRow, numCol);
         for (int row = 0; row < numRow; row++) {
             for (int col = 0; col < numCol; col++) {
-                m.setValue(row, col, Math.random());
+                m.setValue(row, col, sigmoid(this.getValue(row, col)));
             }
         }
         return m;
     }
+
 
     public static Matrix setOne(int row, int col) {
         Matrix m = new Matrix(row, col);

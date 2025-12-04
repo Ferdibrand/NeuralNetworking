@@ -1,7 +1,6 @@
 package com.ferdibrand.neuralnetworking;
 
 import java.util.Scanner;
-import java.util.Collections;
 import java.io.File;
 
 public class Network {
@@ -27,8 +26,8 @@ public class Network {
     private int NUM_EPOCHS;
     private Matrix input;
     private Matrix outputTrue;
-    private int[][] trainInput;
-    private int[][] trainOutput;
+    private double[][] trainInput;
+    private double[][] trainOutput;
 
 
     public Network(int numInputNeurons, int numOutputNeurons, int numHiddenLayers, int numHiddenNeurons,
@@ -44,6 +43,10 @@ public class Network {
         this.dataFileName = dataFileName;
         this.answerFileName = answerFileName;
         this.NUM_EPOCHS = numEpochs;
+        input = new Matrix(NUM_INPUT_NEURONS, BATCH_SIZE);
+        outputTrue = new Matrix(NUM_OUTPUT_NEURONS, BATCH_SIZE);
+        costs = new double[NUM_EPOCHS];
+
 
         //filling arrays with arrays of correct order
         layers = new Matrix[NUM_HIDDEN_LAYERS + 2];
@@ -72,14 +75,9 @@ public class Network {
         for (Matrix m : weights) {
             for (int row = 0; row < m.getNumRow(); row++) {
                 for (int col = 0; col < m.getNumCol(); col++) {
-                    m.setValue(row, col, Math.random());
-                }
-            }
-        }
+                    m.setValue(row, col, (Math.random() * 2 - 1) * Math.sqrt(2.0 / (m.getNumCol() + m.getNumRow())));
 
-        for (Matrix m : biases) {
-            for (int row = 0; row < m.getNumRow(); row++) {
-                m.setValue(row, 0, Math.random());
+                }
             }
         }
     }
@@ -108,11 +106,11 @@ public class Network {
         return str;
     }
 
-    public int[][] parse(String filename) {
+    public double[][] parse(String filename) {
         try {
             Scanner scan = new Scanner(new File(filename));
             int numLines = 0;
-            String[] temp;
+            String[] temp = new String[] {""};
             while (scan.hasNextLine()) {
                 numLines++;
                 temp = scan.nextLine().split(",");
@@ -122,28 +120,35 @@ public class Network {
             Scanner read = new Scanner(new File(filename));
             String[][] inputString = new String[numLines][temp.length];
             for (int i = 0; i < numLines; i++) {
-                inputString[i] = read.nextLine().split(",")
+                inputString[i] = read.nextLine().split(",");
             }
-            read.close()
+            read.close();
 
-            int[][] input = new int[numLines][temp.length];
+            double[][] input = new double[numLines][temp.length];
             for (int i = 0; i < numLines; i++) {
-                for (int j = 0; j < temp.length) {
-                    input[i][j] = Integer.parseInt(inputString[i][j]);
+                for (int j = 0; j < temp.length; j++) {
+                    input[i][j] = Double.parseDouble(inputString[i][j]);
                 }
             }
 
             return input;
+        } catch (Exception e) {
+            System.out.println("Could not find file");
+            return new double[][] {{0.0}};
         }
     }
 
     //each column of input is a set of training data; order: NUM_INPUT_NEURONSxBATCH_SIZE
-    public void feedForward(Matrix input) {
+    public void feedForward() {
         layers[INPUT_LAYER_INDEX] = input;
         for (int i = 1; i <= OUTPUT_LAYER_INDEX; i++) {
-            layers[i] = weights[i - 1].multiply(layers[i - 1]).add(expandBias(biases[i - 1], BATCH_SIZE)).sigmoid();
+            layers[i] = weights[i - 1].multiply(layers[i - 1])
+                    .add(expandBias(biases[i - 1], layers[i - 1].getNumCol()))
+                    .sigmoid();
+
         }
     }
+
 
     //input is a n x 1 matrix, output is n x numCol matrix
     public Matrix expandBias(Matrix input, int numCol) {
@@ -211,13 +216,40 @@ public class Network {
 
     //For binary output
     public double loss(double outputPredicted, double outputTrue) {
+//        double epsilon = 1e-10;
+//        outputPredicted = Math.max(epsilon, Math.min(1 - epsilon, outputPredicted));
         return -(outputTrue * Math.log(outputPredicted) + (1 - outputTrue) * Math.log(1 - outputPredicted));
     }
 
     public void train() {
+        trainInput = parse(dataFileName);
+        trainOutput = parse(answerFileName);
+
         for (int i = 0; i < NUM_EPOCHS; i++) {
+
+
+            // FIX THIS, USE CORRESPONDING ROWS IN OUTPUT, NOT RANDOM
+            for (int j = 0; j < BATCH_SIZE; j++) {
+                int random = (int)(Math.random() * trainInput.length);
+                for (int k = 0; k < NUM_INPUT_NEURONS; k++) {
+                    input.setValue(k, j, trainInput[random][k]);
+                }
+                for (int k = 0; k < NUM_OUTPUT_NEURONS; k++) {
+                    outputTrue.setValue(k, j, trainOutput[random][k]);
+                }
+
+            }
+
+            feedForward();
+            backPropagate();
+
             epoch++;
-            //feedForward();
         }
+    }
+
+    public Matrix predict(Matrix data) {
+        input = data;
+        feedForward();
+        return layers[OUTPUT_LAYER_INDEX];
     }
 }
